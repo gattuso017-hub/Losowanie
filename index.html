@@ -1,189 +1,218 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Losowanie prezentów</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Losowanie prezentów</title>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<style>
-html, body { margin:0; padding:0; height:100%; }
-body {
-  font-family:Arial, sans-serif;
-  background:url('https://i.ibb.co/tBzF5G6/christmas-bg.jpg') no-repeat center center fixed;
-  background-size:cover;
-  color:#fff;
-  display:flex; justify-content:center; align-items:center;
-}
-.container {
-  background-color:rgba(0,0,0,0.7);
-  padding:40px; border-radius:20px;
-  width:90%; max-width:700px; text-align:center;
-}
-h1 { color:#ffdd00; text-shadow:2px 2px #b30000; cursor:pointer; }
-button {
-  padding:12px 25px; font-size:18px;
-  background-color:#b30000; color:white;
-  border:none; border-radius:10px; cursor:pointer;
-  transition:background-color 0.3s; margin-top:10px;
-}
-button:hover { background-color:#ff3333; }
-select, input {
-  padding:8px; font-size:16px; margin:10px;
-  border-radius:5px; border:1px solid #ffdd00;
-}
-#result {
-  margin-top:20px; font-weight:bold; font-size:18px;
-  background-color:rgba(255,255,255,0.8); color:#000;
-  padding:10px; border-radius:10px;
-}
-option:disabled { color:gray; }
-#availableUsers {
-  margin-bottom:20px; font-weight:bold; font-size:16px;
-  background-color:rgba(255,255,255,0.8); color:#000;
-  padding:10px; border-radius:5px;
-}
-#adminPanel {
-  margin-top:30px; display:none;
-  background-color:rgba(255,255,255,0.9);
-  padding:15px; border-radius:10px; color:#000;
-}
-#qrcode { margin-top:20px; }
-</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body { 
+      font-family: Arial, sans-serif; 
+      background: url('https://i.ibb.co/tBzF5G6/christmas-bg.jpg') no-repeat center center fixed; 
+      background-size: cover; 
+      color: #fff;
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+    }
+    .container {
+      background-color: rgba(0,0,0,0.7);
+      padding: 40px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 700px;
+      text-align: center;
+    }
+    h1 { color: #ffdd00; text-shadow: 2px 2px #b30000; cursor: pointer; }
+    button { 
+      padding: 12px 25px; 
+      font-size: 18px; 
+      background-color: #b30000; 
+      color: white; 
+      border: none; 
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 10px;
+    }
+    button:hover { background-color: #ff3333; }
+    select, input { padding: 8px; font-size: 16px; margin: 10px; border-radius: 5px; border: 1px solid #ffdd00; }
+    #result { margin-top: 20px; font-weight: bold; font-size: 18px; background-color: rgba(255,255,255,0.8); color: #000; padding: 10px; border-radius: 10px; }
+    option:disabled { color: gray; }
+    #availableUsers { margin-bottom: 20px; font-weight: bold; font-size: 16px; background-color: rgba(255,255,255,0.8); color: #000; padding: 10px; border-radius: 5px; }
+    #adminPanel { margin-top: 30px; display: none; background-color: rgba(255,255,255,0.9); padding: 15px; border-radius: 10px; }
+    #qrcode { margin-top: 20px; }
+  </style>
 </head>
 <body>
-<div class="container">
-  <h1>🎄 Świąteczny Los 🎄</h1>
-  <div id="availableUsers"></div>
+  <div class="container">
+    <h1>🎄 Świąteczny Los 🎄</h1>
+    <div id="availableUsers"></div>
 
-  <label for="name">Wpisz swój login do losowania z dostępnej listy:</label>
-  <input type="text" id="name" placeholder="Twoje imię"><br>
-  <label for="groupSelect">Wybierz grupę:</label>
-  <select id="groupSelect">
-    <option value="1">Grupa A</option>
-    <option value="2">Grupa B</option>
-    <option value="3">Grupa C</option>
-    <option value="4">Grupa D</option>
-    <option value="5">Grupa E</option>
-  </select><br>
-  <button onclick="drawGroup()">Losuj grupę</button>
+    <label for="name">Wpisz swój login do losowania z dostępnej listy:</label>
+    <input type="text" id="name" placeholder="Twoje imię">
+    <br>
+    <label for="groupSelect">Wybierz grupę:</label>
+    <select id="groupSelect">
+      <option value="1">Grupa A</option>
+      <option value="2">Grupa B</option>
+      <option value="3">Grupa C</option>
+      <option value="4">Grupa D</option>
+      <option value="5">Grupa E</option>
+    </select>
+    <br>
+    <button onclick="drawGroup()">Losuj grupę</button>
 
-  <div id="result"></div>
-  <div id="qrcode"></div>
+    <div id="result"></div>
+    <div id="qrcode"></div>
 
-  <div id="adminPanel">
-    <h2>Panel Administratora - Logi losowań</h2>
-    <textarea id="logs" rows="10" cols="50" readonly></textarea><br>
-    <button onclick="resetDraws()">🧹 Resetuj losowanie</button>
+    <div id="adminPanel">
+      <h2>Panel Administratora - Logi losowań</h2>
+      <textarea id="logs" rows="10" cols="50" readonly></textarea><br>
+      <button onclick="resetDraws()">🧹 Resetuj losowania</button>
+    </div>
   </div>
-</div>
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCsLwn69mSEbZNJOnaEKxZMEBGc_9nF3j4",
-  authDomain: "swiateczny-los.firebaseapp.com",
-  projectId: "swiateczny-los",
-  storageBucket: "swiateczny-los.firebasestorage.app",
-  messagingSenderId: "106728824953",
-  appId: "1:106728824953:web:0b317e165afecc3fb734a8"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+  <script>
+    // Firebase konfiguracja
+    const firebaseConfig = {
+      apiKey: "AIzaSyCsLwn69mSEbZNJOnaEKxZMEBGc_9nF3j4",
+      authDomain: "swiateczny-los.firebaseapp.com",
+      projectId: "swiateczny-los",
+      storageBucket: "swiateczny-los.firebasestorage.app",
+      messagingSenderId: "106728824953",
+      appId: "1:106728824953:web:0b317e165afecc3fb734a8"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-const groups = {
-  1:['Anna','Jan'],
-  2:['Madzia','Kazek','Ania','Mikołaj'],
-  3:['Kasia','Kamil','Franuś'],
-  4:['Sabina','Artur','Wiktoria'],
-  5:['Madzia','Jarek','Krzyś']
-};
-const users = ['Kasia','Jarek','Sabina','Anna','Magda'];
-const userGroups = {Kasia:3,Jarek:5,Sabina:4,Anna:1,Magda:2};
+    const groups = {
+      1: ['Anna', 'Jan'],
+      2: ['Madzia', 'Kazek', 'Ania', 'Mikołaj'],
+      3: ['Kasia', 'Kamil', 'Franuś'],
+      4: ['Sabina', 'Artur', 'Wiktoria'],
+      5: ['Madzia', 'Jarek', 'Krzyś']
+    };
 
-// zapis do bazy
-async function logDrawToDB(user, groupNum, members) {
-  await db.collection('draws').add({
-    timestamp: new Date().toISOString(),
-    user, groupNum, members
-  });
-}
+    const users = ['Kasia', 'Jarek', 'Sabina', 'Anna', 'Magda'];
+    const userGroups = { 'Kasia': 3, 'Jarek': 5, 'Sabina': 4, 'Anna': 1, 'Magda': 2 };
 
-// resetowanie bazy
-async function resetDraws() {
-  if(!confirm("Czy na pewno chcesz zresetować wszystkie losowania?")) return;
-  const snapshot = await db.collection('draws').get();
-  const deletions = snapshot.docs.map(doc => doc.ref.delete());
-  await Promise.all(deletions);
-  alert("✅ Losowania zostały zresetowane.");
-  document.getElementById('logs').value = "";
-}
-
-// odświeżanie danych w czasie rzeczywistym
-function setupRealtimeUpdates() {
-  db.collection('draws').onSnapshot(snapshot => {
-    const takenGroups = snapshot.docs.map(doc => doc.data().groupNum);
-    const select = document.getElementById('groupSelect');
-    for (let opt of select.options) {
-      opt.disabled = takenGroups.includes(Number(opt.value));
+    // zapis do bazy
+    async function logDrawToDB(user, groupNum, members) {
+      await db.collection('draws').add({
+        timestamp: new Date().toISOString(),
+        user,
+        groupNum,
+        members
+      });
     }
-    const availableDiv = document.getElementById('availableUsers');
-    const availableUsers = users.filter(u => !takenGroups.includes(userGroups[u]));
-    availableDiv.textContent = 'Dostępni do losowania: ' + availableUsers.join(', ');
-  });
-}
 
-async function drawGroup() {
-  const name = document.getElementById('name').value.trim();
-  const resultDiv = document.getElementById('result');
-  const select = document.getElementById('groupSelect');
-  const chosenGroup = Number(select.value);
+    // nasłuchiwanie zmian
+    function setupRealtimeUpdates() {
+      db.collection('draws').onSnapshot(snapshot => {
+        const takenGroups = snapshot.docs.map(doc => doc.data().groupNum);
+        const takenUsers = snapshot.docs.map(doc => doc.data().user);
 
-  if (!users.includes(name)) {
-    resultDiv.textContent = 'Niepoprawny login. Wpisz jedno z: ' + users.join(', ');
-    return;
-  }
-  if (chosenGroup === userGroups[name]) {
-    resultDiv.textContent = 'Nie możesz wybrać swojej własnej grupy!';
-    return;
-  }
-  if (select.options[select.selectedIndex].disabled) {
-    resultDiv.textContent = 'Ta grupa została już wybrana!';
-    return;
-  }
-  const members = groups[chosenGroup].join(', ');
-  resultDiv.textContent = `🎁 Gratulacje ${name}! Wybrałeś ${select.options[select.selectedIndex].text}. Członkowie grupy: ${members}`;
-  await logDrawToDB(name, chosenGroup, groups[chosenGroup]);
-}
+        // wyłącz zajęte grupy
+        const select = document.getElementById('groupSelect');
+        for (let option of select.options) {
+          const groupNum = Number(option.value);
+          option.disabled = takenGroups.includes(groupNum);
+        }
 
-function showAdminPanel() {
-  const password = prompt('Podaj hasło administratora:');
-  if (password === 'Visiativ17') {
-    document.getElementById('adminPanel').style.display = 'block';
-    db.collection('draws').orderBy('timestamp').get().then(snapshot => {
-      const logsArea = document.getElementById('logs');
-      logsArea.value = snapshot.docs.map(doc => {
-        const log = doc.data();
-        const names = Array.isArray(log.members) ? log.members.join(', ') : log.members;
-        return `${log.timestamp} - ${log.user} wybrał grupę ${log.groupNum} (${names})`;
-      }).join('\n');
+        // zaktualizuj dostępnych użytkowników
+        const availableDiv = document.getElementById('availableUsers');
+        const availableUsers = users.filter(user => 
+          !takenUsers.includes(user) && !takenGroups.includes(userGroups[user])
+        );
+        availableDiv.textContent = 'Dostępni do losowania: ' + (availableUsers.join(', ') || 'Brak');
+      });
+    }
+
+    // losowanie grupy
+    async function drawGroup() {
+      const name = document.getElementById('name').value.trim();
+      const resultDiv = document.getElementById('result');
+      const select = document.getElementById('groupSelect');
+      const chosenGroup = Number(select.value);
+
+      if (!users.includes(name)) {
+        resultDiv.textContent = 'Niepoprawny login. Wpisz jedno z: ' + users.join(', ');
+        return;
+      }
+
+      if (chosenGroup === userGroups[name]) {
+        resultDiv.textContent = 'Nie możesz wybrać swojej własnej grupy!';
+        return;
+      }
+
+      // sprawdz czy już losował
+      const existing = await db.collection('draws').where('user', '==', name).get();
+      if (!existing.empty) {
+        resultDiv.textContent = 'Już brałeś udział w losowaniu!';
+        return;
+      }
+
+      // sprawdz czy grupa nie jest zajęta
+      const taken = await db.collection('draws').where('groupNum', '==', chosenGroup).get();
+      if (!taken.empty) {
+        resultDiv.textContent = 'Ta grupa została już wybrana przez innego użytkownika!';
+        return;
+      }
+
+      const members = groups[chosenGroup].join(', ');
+      resultDiv.textContent = `Gratulacje ${name}! Wybrałeś ${select.options[select.selectedIndex].text}. Członkowie grupy: ${members}`;
+      await logDrawToDB(name, chosenGroup, members);
+    }
+
+    // panel administratora
+    function showAdminPanel() {
+      const password = prompt('Podaj hasło administratora:');
+      if (password === 'Visiativ17') {
+        const panel = document.getElementById('adminPanel');
+        panel.style.display = 'block';
+        db.collection('draws').get().then(snapshot => {
+          const logsArea = document.getElementById('logs');
+          logsArea.value = snapshot.docs.map(doc => {
+            const log = doc.data();
+            return `${log.timestamp} - ${log.user} wybrał grupę ${log.groupNum} (${log.members})`;
+          }).join('\n');
+        });
+      } else {
+        alert('Niepoprawne hasło');
+      }
+    }
+
+    // reset losowań
+    async function resetDraws() {
+      const confirmReset = confirm('Czy na pewno chcesz usunąć wszystkie losowania?');
+      if (!confirmReset) return;
+
+      const snapshot = await db.collection('draws').get();
+      const batch = db.batch();
+      snapshot.docs.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+
+      alert('Wszystkie losowania zostały zresetowane!');
+      document.getElementById('logs').value = '';
+    }
+
+    document.querySelector('h1').addEventListener('dblclick', showAdminPanel);
+    setupRealtimeUpdates();
+
+    // QR kod
+    new QRCode(document.getElementById('qrcode'), {
+      text: window.location.href,
+      width: 128,
+      height: 128,
     });
-  } else {
-    alert('Niepoprawne hasło');
-  }
-}
-
-document.querySelector('h1').addEventListener('dblclick', showAdminPanel);
-setupRealtimeUpdates();
-
-// QR do udostępnienia
-new QRCode(document.getElementById('qrcode'), {
-  text: window.location.href,
-  width:128, height:128
-});
-</script>
+  </script>
 </body>
 </html>
